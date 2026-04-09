@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Recompo">
+<meta name="theme-color" content="#0e0e0e">
+<title>Recompo App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#242424;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --accent:#c8f060;--accent2:#60d4f0;--accent3:#f060a0;
+  --legs:#f0a060;--liss:#a060f0;--text:#f0f0ee;--muted:#777;--muted2:#555;
+  --push:#c8f060;--pull:#60d4f0;
+  --success:#4ade80;--danger:#f87171;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100%;overflow:hidden;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+
+/* NAV */
+.bottom-nav{display:flex;background:var(--surface);border-top:0.5px solid var(--border);padding:8px 0 max(8px,env(safe-area-inset-bottom));flex-shrink:0;z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;transition:color 0.15s;}
+.nav-btn.active{color:var(--accent);}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.06em;}
+
+/* PAGES */
+.pages{flex:1;overflow:hidden;position:relative;}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.page.active{opacity:1;pointer-events:all;}
+.page-inner{padding:env(safe-area-inset-top,20px) 1rem 2rem;max-width:480px;margin:0 auto;padding-top:calc(env(safe-area-inset-top,20px) + 1rem);}
+
+/* TYPOGRAPHY */
+.page-tag{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1.05;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:1.5rem;line-height:1.5;}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;margin-top:1.5rem;}
+
+/* CARDS */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+.card2{background:var(--surface2);border-radius:10px;padding:10px 12px;}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem;}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:12px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.stat-label{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;text-transform:uppercase;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* WEEK NAV */
+.week-nav{display:flex;gap:5px;margin-bottom:1rem;flex-wrap:wrap;}
+.week-btn{font-family:'DM Mono',monospace;font-size:11px;padding:6px 11px;border-radius:20px;border:0.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;-webkit-appearance:none;transition:all 0.15s;}
+.week-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;}
+
+/* DAY CARDS */
+.day-card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:7px;}
+.day-header{display:grid;grid-template-columns:64px 1fr 28px;align-items:center;padding:11px 12px;gap:10px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.day-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.day-top{display:flex;align-items:center;gap:8px;}
+.day-pill{font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;text-transform:uppercase;flex-shrink:0;}
+.pill-push{background:rgba(200,240,96,0.15);color:var(--push);}
+.pill-pull{background:rgba(96,212,240,0.15);color:var(--pull);}
+.pill-legs{background:rgba(240,160,96,0.15);color:var(--legs);}
+.pill-liss{background:rgba(160,96,240,0.15);color:var(--liss);}
+.pill-rest{background:rgba(68,68,68,0.3);color:var(--muted);}
+.day-name{font-size:13px;font-weight:500;}
+.day-focus{font-size:10px;color:var(--muted);margin-top:2px;}
+.day-arrow{font-size:12px;color:var(--muted);transition:transform 0.2s;text-align:center;}
+.day-card.expanded .day-arrow{transform:rotate(180deg);}
+.day-body{display:none;padding:0 12px 12px;}
+.day-card.expanded .day-body{display:block;}
+
+/* EXERCISES */
+.ex-item{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--surface2);border-radius:9px;margin-bottom:5px;cursor:pointer;}
+.ex-check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.ex-check.done{background:var(--accent);border-color:var(--accent);}
+.ex-check.done::after{content:'✓';font-size:11px;color:#000;font-weight:700;}
+.ex-info{flex:1;min-width:0;}
+.ex-name{font-size:12px;font-weight:500;}
+.ex-focus{font-size:10px;color:var(--muted);margin-top:1px;}
+.ex-right{text-align:right;flex-shrink:0;}
+.ex-sets{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);}
+.ex-tip{font-size:9px;color:var(--muted);margin-top:1px;}
+
+/* CHARGE INPUT */
+.charge-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:9px;margin-bottom:5px;}
+.charge-label{flex:1;font-size:12px;font-weight:500;}
+.charge-sub{font-size:10px;color:var(--muted);}
+.charge-input-wrap{display:flex;align-items:center;gap:6px;}
+.charge-input{background:var(--surface3);border:0.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:500;width:70px;padding:6px 8px;text-align:center;-webkit-appearance:none;}
+.charge-unit{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.charge-pr{font-size:9px;color:var(--accent);margin-top:2px;text-align:right;}
+
+/* TIMER */
+.timer-card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:1rem;}
+.timer-display{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;letter-spacing:-2px;color:var(--text);line-height:1;}
+.timer-display.running{color:var(--accent);}
+.timer-display.done{color:var(--success);}
+.timer-presets{display:flex;gap:6px;justify-content:center;margin:14px 0;}
+.timer-preset{font-family:'DM Mono',monospace;font-size:11px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;-webkit-appearance:none;}
+.timer-preset.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.timer-btns{display:flex;gap:8px;justify-content:center;margin-top:12px;}
+.timer-btn{font-family:'DM Mono',monospace;font-size:12px;padding:10px 24px;border-radius:25px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;-webkit-appearance:none;transition:all 0.15s;}
+.timer-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:500;}
+.timer-btn.danger{background:rgba(248,113,113,0.15);color:var(--danger);border-color:var(--danger);}
+.timer-progress{height:4px;background:var(--surface2);border-radius:2px;margin:14px 0 0;overflow:hidden;}
+.timer-bar{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s linear;width:0%;}
+
+/* JOURNAL */
+.journal-entry{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;}
+.je-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;}
+.je-seance{font-size:13px;font-weight:500;margin-bottom:4px;}
+.je-note{font-size:12px;color:var(--muted);line-height:1.5;}
+.je-stats{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.je-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:10px;background:var(--surface2);color:var(--muted);}
+.note-input{width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;resize:none;min-height:80px;margin-top:8px;}
+.save-btn{width:100%;margin-top:8px;padding:12px;border-radius:25px;background:var(--accent);color:#000;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;border:none;cursor:pointer;letter-spacing:0.05em;}
+
+/* PROGRESS BARS */
+.prog-row{margin-bottom:12px;}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.prog-name{color:var(--muted);}
+.prog-stat{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);}
+.prog-track{background:var(--surface2);border-radius:4px;height:5px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+
+/* SHARE */
+.share-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.share-title{font-size:14px;font-weight:500;margin-bottom:4px;}
+.share-sub{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+.share-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:0.5px solid var(--border);cursor:pointer;font-size:12px;font-weight:500;margin-bottom:6px;width:100%;color:var(--text);}
+.share-icon{font-size:16px;width:24px;text-align:center;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:0.5px solid var(--border2);border-radius:25px;padding:10px 20px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text);opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* DAY NOTE */
+.day-note{font-size:11px;color:var(--muted);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--accent);line-height:1.6;}
+
+/* AI CHAT */
+.chat-container{display:flex;flex-direction:column;height:100%;position:absolute;inset:0;}
+.chat-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top,20px) + 1rem) 1rem 1rem;display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;width:100%;}
+.chat-bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.6;}
+.chat-bubble.ai{background:var(--surface);border:0.5px solid var(--border);color:var(--text);border-bottom-left-radius:4px;align-self:flex-start;}
+.chat-bubble.user{background:var(--accent);color:#000;font-weight:500;border-bottom-right-radius:4px;align-self:flex-end;}
+.chat-bubble.typing{opacity:0.6;}
+.chat-bubble .dots{display:inline-flex;gap:3px;align-items:center;}
+.chat-bubble .dot{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
+.chat-bubble .dot:nth-child(2){animation-delay:0.2s;}
+.chat-bubble .dot:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0.3;}40%{opacity:1;}}
+.chat-input-bar{background:var(--surface);border-top:0.5px solid var(--border);padding:8px 1rem max(12px,env(safe-area-inset-bottom));display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.chat-input{flex:1;background:var(--surface2);border:0.5px solid var(--border2);border-radius:20px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 14px;resize:none;max-height:100px;min-height:38px;line-height:1.4;overflow-y:auto;}
+.chat-send{width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:opacity 0.15s;}
+.chat-send:disabled{opacity:0.4;cursor:not-allowed;}
+.chat-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.chat-suggestion{font-size:11px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;-webkit-appearance:none;white-space:nowrap;}
+.api-key-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:16px;margin:1rem;max-width:480px;margin-left:auto;margin-right:auto;}
+.api-key-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px;}
+.api-key-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+.api-key-input{width:100%;background:var(--surface2);border:0.5px solid var(--border2);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:10px 12px;margin-bottom:8px;}
+.api-key-btn{width:100%;padding:12px;border-radius:25px;background:var(--accent);color:#000;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;border:none;cursor:pointer;}
+.api-key-link{font-size:11px;color:var(--accent);text-align:center;display:block;margin-top:8px;text-decoration:none;}
+.prog-result{background:var(--surface2);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:12px;line-height:1.7;white-space:pre-wrap;}
+
+/* INFO ROWS */
+.info-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:7px 10px;background:var(--surface2);border-radius:8px;margin-bottom:5px;gap:8px;}
+.info-key{color:var(--muted);flex-shrink:0;}
+.info-val{color:var(--text);font-weight:500;text-align:right;font-size:11px;}
+
+/* MACRO GRID */
+.macro-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:10px;}
+.macro{text-align:center;padding:10px 4px;background:var(--surface2);border-radius:8px;}
+.macro-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.macro-key{font-size:9px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;text-transform:uppercase;}
+
+/* TODAY BADGE */
+.today-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,240,96,0.1);border:0.5px solid rgba(200,240,96,0.3);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:12px;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:13px;line-height:1.6;}
+
+/* RECORD BADGE */
+.pr-badge{font-size:9px;background:rgba(200,240,96,0.15);color:var(--accent);padding:1px 6px;border-radius:8px;font-family:'DM Mono',monospace;margin-left:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="pages">
+
+    <!-- PAGE: PROGRAMME -->
+    <div class="page active" id="page-programme">
+      <div class="page-inner">
+        <div class="page-tag">// Recompo · 10 semaines</div>
+        <div class="page-title">Programme</div>
+        <div class="page-sub">MK-2866 sem 1–6 · Testo Max sem 7–10</div>
+        <div class="week-nav" id="weekNav"></div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:7px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></div>
+          <span id="phaseLabel">Sem 1–2 — Installation MK</span>
+        </div>
+        <div id="daysGrid"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SEANCE -->
+    <div class="page" id="page-seance">
+      <div class="page-inner">
+        <div class="page-tag">// Séance du jour</div>
+        <div class="page-title" id="seanceTitle">Aujourd'hui</div>
+        <div id="todayBadge" class="today-badge">📅 <span id="todayDay">—</span></div>
+
+        <div class="section-label">Timer de repos</div>
+        <div class="timer-card">
+          <div class="timer-display" id="timerDisplay">1:30</div>
+          <div class="timer-progress"><div class="timer-bar" id="timerBar"></div></div>
+          <div class="timer-presets">
+            <button class="timer-preset" onclick="setTimer(60)">1 min</button>
+            <button class="timer-preset active" onclick="setTimer(90)">1:30</button>
+            <button class="timer-preset" onclick="setTimer(120)">2 min</button>
+            <button class="timer-preset" onclick="setTimer(180)">3 min</button>
+          </div>
+          <div class="timer-btns">
+            <button class="timer-btn primary" id="timerStartBtn" onclick="toggleTimer()">Start</button>
+            <button class="timer-btn" onclick="resetTimer()">Reset</button>
+          </div>
+        </div>
+
+        <div class="section-label">Exercices — cocher au fur et à mesure</div>
+        <div id="seanceExercises"></div>
+
+        <div class="section-label">Note de séance</div>
+        <div class="card">
+          <textarea class="note-input" id="seanceNote" placeholder="Comment s'est passée la séance ? Sensations, charges, remarques..."></textarea>
+          <button class="save-btn" onclick="saveSession()">Sauvegarder la séance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: CHARGES -->
+    <div class="page" id="page-charges">
+      <div class="page-inner">
+        <div class="page-tag">// Records personnels</div>
+        <div class="page-title">Mes charges</div>
+        <div class="page-sub">Note tes charges pour suivre ta progression</div>
+        <div id="chargesGrid"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: JOURNAL -->
+    <div class="page" id="page-journal">
+      <div class="page-inner">
+        <div class="page-tag">// Historique</div>
+        <div class="page-title">Journal</div>
+        <div class="page-sub">Toutes tes séances enregistrées</div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--accent);" id="statSeances">0</div>
+            <div class="stat-label">Séances</div>
+            <div class="stat-sub">enregistrées</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--accent2);" id="statSemaine">0</div>
+            <div class="stat-label">Cette semaine</div>
+            <div class="stat-sub">séances faites</div>
+          </div>
+        </div>
+
+        <div class="section-label">Résultats attendus</div>
+        <div class="card">
+          <div class="prog-row"><div class="prog-label"><span class="prog-name">Masse musculaire</span><span class="prog-stat">+1.5 à 2.5 kg</span></div><div class="prog-track"><div class="prog-fill" style="width:75%;background:var(--accent);"></div></div></div>
+          <div class="prog-row"><div class="prog-label"><span class="prog-name">Masse grasse</span><span class="prog-stat">−1.5 à 2.5 kg</span></div><div class="prog-track"><div class="prog-fill" style="width:70%;background:var(--accent2);"></div></div></div>
+          <div class="prog-row"><div class="prog-label"><span class="prog-name">Force charges</span><span class="prog-stat">+6 à 10%</span></div><div class="prog-track"><div class="prog-fill" style="width:65%;background:var(--legs);"></div></div></div>
+          <div class="prog-row"><div class="prog-label"><span class="prog-name">Définition</span><span class="prog-stat">Nette</span></div><div class="prog-track"><div class="prog-fill" style="width:82%;background:var(--liss);"></div></div></div>
+          <div class="prog-row" style="margin-bottom:0"><div class="prog-label"><span class="prog-name">Épaules / dos</span><span class="prog-stat">Impact max</span></div><div class="prog-track"><div class="prog-fill" style="width:88%;background:var(--accent3);"></div></div></div>
+        </div>
+
+        <div class="section-label">Historique des séances</div>
+        <div id="journalList"><div class="empty">Aucune séance enregistrée.<br>Complète ta première séance !</div></div>
+      </div>
+    </div>
+
+    <!-- PAGE: PARTAGER -->
+    <div class="page" id="page-partager">
+      <div class="page-inner">
+        <div class="page-tag">// Partager</div>
+        <div class="page-title">Partager</div>
+        <div class="page-sub">Partage ton programme et ta progression</div>
+
+        <div class="share-card">
+          <div class="share-title">Le programme complet</div>
+          <div class="share-sub">Partage le lien du programme à tes amis</div>
+          <button class="share-btn" onclick="shareLink()"><span class="share-icon">🔗</span> Copier le lien</button>
+          <button class="share-btn" onclick="shareNative()"><span class="share-icon">↗</span> Partager via...</button>
+        </div>
+
+        <div class="share-card">
+          <div class="share-title">Mes stats et records</div>
+          <div class="share-sub">Génère un résumé de ta progression</div>
+          <button class="share-btn" onclick="shareStats()"><span class="share-icon">📊</span> Copier mes stats</button>
+        </div>
+
+        <div class="share-card">
+          <div class="share-title">Résumé de séance</div>
+          <div class="share-sub">Partage ta dernière séance</div>
+          <button class="share-btn" onclick="shareLastSession()"><span class="share-icon">💪</span> Copier la dernière séance</button>
+        </div>
+
+        <div class="section-label">Nutrition · Rappel</div>
+        <div class="card">
+          <div class="macro-grid">
+            <div class="macro"><div class="macro-val" style="color:var(--accent);">3000</div><div class="macro-key">kcal</div></div>
+            <div class="macro"><div class="macro-val" style="color:var(--accent2);">205g</div><div class="macro-key">protéines</div></div>
+            <div class="macro"><div class="macro-val" style="color:var(--legs);">290g</div><div class="macro-key">glucides</div></div>
+            <div class="macro"><div class="macro-val" style="color:var(--liss);">80g</div><div class="macro-key">lipides</div></div>
+          </div>
+          <div class="info-row"><span class="info-key">Pré-training</span><span class="info-val">80g glucides + 40g protéines</span></div>
+          <div class="info-row"><span class="info-key">Post-training</span><span class="info-val">Whey 40g + 60g riz/banane</span></div>
+          <div class="info-row"><span class="info-key">Eau</span><span class="info-val">3L minimum / jour</span></div>
+        </div>
+
+        <div class="section-label">Suppléments</div>
+        <div class="card">
+          <div class="info-row"><span class="info-key">Ostarine MK-2866</span><span class="info-val">15mg/j · sem 1–6</span></div>
+          <div class="info-row"><span class="info-key">TUDCA</span><span class="info-val">250mg/j · sem 1–6</span></div>
+          <div class="info-row"><span class="info-key">Créatine</span><span class="info-val">5g/j · continu</span></div>
+          <div class="info-row"><span class="info-key">Whey</span><span class="info-val">40g · post-training</span></div>
+          <div class="info-row"><span class="info-key">Vitamine D3</span><span class="info-val">3000 UI/j</span></div>
+          <div class="info-row"><span class="info-key">Testo Max</span><span class="info-val">4 caps/j · sem 7–10</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: IA COACH -->
+    <div class="page" id="page-ia">
+      <div id="iaSetup" style="display:none;padding-top:calc(env(safe-area-inset-top,20px) + 1rem);">
+        <div class="api-key-card">
+          <div class="page-tag">// Coach IA</div>
+          <div class="api-key-title">Clé API Anthropic</div>
+          <div class="api-key-sub">Pour utiliser le coach IA, entre ta clé API Anthropic. Elle est stockée uniquement sur ton appareil.</div>
+          <input class="api-key-input" type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
+          <button class="api-key-btn" onclick="saveApiKey()">Activer le coach IA</button>
+          <a class="api-key-link" href="https://console.anthropic.com" target="_blank">Obtenir une clé sur console.anthropic.com →</a>
+        </div>
+      </div>
+      <div id="iaChat" class="chat-container" style="display:none;">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-bubble ai">Coach IA prêt. Je connais ton profil : 1m95, 85kg, objectif recompo. Dis-moi ce que tu veux — nouveau programme, conseils nutrition, exercices spécifiques...</div>
+          <div class="chat-suggestions">
+            <button class="chat-suggestion" onclick="sendSuggestion(this.textContent)">Programme sèche 8 sem</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this.textContent)">Exercices épaules</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this.textContent)">Plan nutrition bulk</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this.textContent)">Programme débutant</button>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <textarea class="chat-input" id="chatInput" placeholder="Demande un programme, des conseils..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="chat-send" id="chatSendBtn" onclick="sendMessage()">↑</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('programme',this)">
+      <div class="nav-icon">📋</div><div class="nav-label">Programme</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('seance',this)">
+      <div class="nav-icon">💪</div><div class="nav-label">Séance</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('charges',this)">
+      <div class="nav-icon">🏆</div><div class="nav-label">Charges</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('journal',this)">
+      <div class="nav-icon">📈</div><div class="nav-label">Journal</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('partager',this)">
+      <div class="nav-icon">↗</div><div class="nav-label">Partager</div>
+    </button>
+    <button class="nav-btn" onclick="showPage('ia',this)">
+      <div class="nav-icon">🤖</div><div class="nav-label">Coach IA</div>
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// DATA
+const days=[
+  {day:"Lundi",type:"push",label:"Push lourd",focus:"Épaules + Pecs + Triceps",exercises:[
+    {name:"Presse militaire barre",focus:"Épaules — priorité absolue",sets:"5×5",tip:"Progression semaine/semaine"},
+    {name:"Développé incliné barre",focus:"Haut du pectoral",sets:"4×8",tip:"Inclinaison 30–45°"},
+    {name:"Élévations latérales",focus:"Deltoïdes médians",sets:"4×15",tip:"Contrôle strict, pas d'élan"},
+    {name:"Dips lestés",focus:"Pecs bas + triceps",sets:"3×10",tip:"Lester si trop facile"},
+    {name:"Face pulls câble",focus:"Deltoïdes postérieurs",sets:"3×15",tip:"Essentiel pour l'épaule"},
+  ],note:"La presse militaire est ton exercice roi. Note ta charge chaque semaine."},
+  {day:"Mardi",type:"pull",label:"Pull lourd",focus:"Dos + Biceps",exercises:[
+    {name:"Tractions lestées",focus:"Grand dorsal — largeur",sets:"5×6",tip:"Lester dès 8 reps propres"},
+    {name:"Rowing barre Yates",focus:"Épaisseur du dos",sets:"4×8",tip:"Dos plat, tirage vers sternum"},
+    {name:"Tirage nuque poulie",focus:"Grand dorsal finition",sets:"3×12",tip:"Amplitude complète"},
+    {name:"Curl barre EZ",focus:"Biceps — masse",sets:"3×10",tip:"Pas d'élan"},
+    {name:"Curl marteau",focus:"Brachial + avant-bras",sets:"3×12",tip:"Alterné ou simultané"},
+  ],note:"Tractions lestées = exercice le plus efficace pour l'effet V sur un 1m95."},
+  {day:"Mercredi",type:"liss",label:"LISS + Gainage",focus:"Cardio léger + core",exercises:[
+    {name:"Vélo ou marche rapide",focus:"Cardio basse intensité",sets:"40 min",tip:"130–140 bpm max"},
+    {name:"Planche frontale",focus:"Core stabilité",sets:"4×45s",tip:"Fessiers et abdos contractés"},
+    {name:"Planche latérale",focus:"Obliques",sets:"3×30s/côté",tip:"Hanches hautes"},
+    {name:"Hollow body hold",focus:"Abdos profonds",sets:"3×30s",tip:"Bas du dos collé au sol"},
+  ],note:"Pas de course à pied — trop catabolique. Vélo ou marche rapide uniquement."},
+  {day:"Jeudi",type:"push",label:"Push volume",focus:"Épaules volume + Bras",exercises:[
+    {name:"Développé Arnold",focus:"Tout le deltoïde",sets:"4×12",tip:"Rotation complète"},
+    {name:"Élévations frontales",focus:"Deltoïde antérieur",sets:"3×15",tip:"Alterné, contrôle"},
+    {name:"Développé couché barre",focus:"Pecs — masse",sets:"4×10",tip:"Toucher légèrement la poitrine"},
+    {name:"Extension triceps poulie",focus:"Triceps — isolation",sets:"4×12",tip:"Coudes fixes"},
+    {name:"Dips entre bancs",focus:"Triceps finition",sets:"3×15",tip:"Lest possible"},
+  ],note:"Plus de reps, moins de charge que lundi. Stimulus complet pour les épaules."},
+  {day:"Vendredi",type:"pull",label:"Pull volume",focus:"Dos épaisseur + Bras",exercises:[
+    {name:"Rowing unilatéral haltère",focus:"Grand dorsal + rhomboïdes",sets:"4×12/côté",tip:"Tirage vers la hanche"},
+    {name:"Tirage horizontal câble",focus:"Dos moyen — épaisseur",sets:"4×12",tip:"Omoplates ensemble"},
+    {name:"Curl concentré",focus:"Biceps — pic",sets:"3×12/côté",tip:"Contraction max en haut"},
+    {name:"Curl barre supination",focus:"Biceps — masse",sets:"3×10",tip:"Pause 1s en haut"},
+    {name:"Shrugs haltères",focus:"Trapèzes",sets:"3×15",tip:"Légère rotation en haut"},
+  ],note:"Volume et isolation — sensations importantes ici, moins la charge."},
+  {day:"Samedi",type:"legs",label:"Jambes",focus:"Quadriceps + Fessiers + Ischios",exercises:[
+    {name:"Squat barre dos",focus:"Jambes complètes",sets:"5×6",tip:"Profondeur parallèle minimum"},
+    {name:"Leg press",focus:"Quadriceps",sets:"4×12",tip:"Pieds hauts = fessiers"},
+    {name:"Fentes marchées haltères",focus:"Fessiers + équilibre",sets:"3×12/jambe",tip:"Genou arrière près du sol"},
+    {name:"Leg curl couché",focus:"Ischios-jambiers",sets:"4×12",tip:"Contrôle excentrique"},
+    {name:"Mollets debout machine",focus:"Mollets",sets:"4×20",tip:"Pause en bas et en haut"},
+  ],note:"Le squat lourd stimule la testostérone et la GH. Ne saute jamais cette séance."},
+  {day:"Dimanche",type:"rest",label:"Repos actif",focus:"Récupération",exercises:[
+    {name:"Marche 30–45 min",focus:"Récupération active",sets:"Optionnel",tip:"Selon la fatigue"},
+    {name:"Stretching complet",focus:"Mobilité",sets:"20 min",tip:"Épaules, dos, hanches, ischios"},
+    {name:"Sommeil",focus:"Reconstruction musculaire",sets:"8h",tip:"Plus important que la séance"},
+  ],note:"La récupération est aussi cruciale que l'entraînement."},
+];
+
+const keyExercises=[
+  {name:"Presse militaire barre",unit:"kg"},
+  {name:"Tractions lestées",unit:"kg lest"},
+  {name:"Développé incliné barre",unit:"kg"},
+  {name:"Rowing barre Yates",unit:"kg"},
+  {name:"Squat barre dos",unit:"kg"},
+  {name:"Développé couché barre",unit:"kg"},
+  {name:"Leg press",unit:"kg"},
+  {name:"Curl barre EZ",unit:"kg"},
+  {name:"Dips lestés",unit:"kg lest"},
+  {name:"Rowing unilatéral haltère",unit:"kg"},
+];
+
+const weekPhases={1:"Sem 1–2 — Installation MK",2:"Sem 1–2 — Installation MK",3:"Sem 3–4 — Effets MK visibles",4:"Sem 3–4 — Effets MK visibles",5:"Sem 5–6 — Pic d'effets MK",6:"Sem 5–6 — Pic d'effets MK",7:"Sem 7–8 — Testo Max PCT",8:"Sem 7–8 — Testo Max PCT",9:"Sem 9–10 — Consolidation",10:"Sem 9–10 — Consolidation"};
+const typeClass={push:'pill-push',pull:'pill-pull',legs:'pill-legs',liss:'pill-liss',rest:'pill-rest'};
+const typeLabel={push:'Push',pull:'Pull',legs:'Legs',liss:'LISS',rest:'Repos'};
+
+// STATE
+let currentWeek=1,expandedDay=null;
+let timerDuration=90,timerRemaining=90,timerRunning=false,timerInterval=null,timerSelected=90;
+let sessions=JSON.parse(localStorage.getItem('sessions')||'[]');
+let charges=JSON.parse(localStorage.getItem('charges')||'{}');
+let checkedExercises=JSON.parse(localStorage.getItem('checked')||'{}');
+
+// NAV
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='journal')renderJournal();
+  if(id==='charges')renderCharges();
+  if(id==='ia')initIAPage();
+}
+
+// TOAST
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// PROGRAMME PAGE
+function renderWeekNav(){
+  const nav=document.getElementById('weekNav');nav.innerHTML='';
+  for(let w=1;w<=10;w++){
+    const btn=document.createElement('button');
+    btn.className='week-btn'+(w===currentWeek?' active':'');
+    btn.textContent='S'+w;
+    btn.onclick=()=>{currentWeek=w;expandedDay=null;renderDays();};
+    nav.appendChild(btn);
+  }
+}
+
+function renderDays(){
+  const grid=document.getElementById('daysGrid');
+  document.getElementById('phaseLabel').textContent=weekPhases[currentWeek];
+  grid.innerHTML='';
+  days.forEach((d,i)=>{
+    const card=document.createElement('div');
+    card.className='day-card'+(expandedDay===i?' expanded':'');
+    card.innerHTML=`<div class="day-header"><div class="day-num">${d.day.toUpperCase()}</div><div><div class="day-top"><span class="day-pill ${typeClass[d.type]}">${typeLabel[d.type]}</span><span class="day-name">${d.label}</span></div><div class="day-focus">${d.focus}</div></div><div class="day-arrow">▾</div></div><div class="day-body"><div class="exercises">${d.exercises.map(ex=>`<div class="ex-item" style="cursor:default"><div class="ex-info"><div class="ex-name">${ex.name}</div><div class="ex-focus">${ex.focus}</div></div><div class="ex-right"><div class="ex-sets">${ex.sets}</div><div class="ex-tip">${ex.tip}</div></div></div>`).join('')}</div><div class="day-note">${d.note}</div></div>`;
+    card.querySelector('.day-header').onclick=()=>{expandedDay=expandedDay===i?null:i;renderDays();};
+    grid.appendChild(card);
+  });
+}
+
+// SEANCE PAGE
+function getTodayDay(){
+  const d=new Date().getDay();
+  return d===0?6:d-1;
+}
+
+function renderSeance(){
+  const todayIdx=getTodayDay();
+  const todayData=days[todayIdx];
+  document.getElementById('seanceTitle').textContent=todayData.label;
+  document.getElementById('todayDay').textContent=todayData.day+' — '+todayData.focus;
+  const todayKey='day_'+todayIdx+'_'+new Date().toDateString();
+  const checked=checkedExercises[todayKey]||{};
+  const container=document.getElementById('seanceExercises');
+  container.innerHTML='';
+  todayData.exercises.forEach((ex,i)=>{
+    const div=document.createElement('div');
+    div.className='ex-item';
+    div.innerHTML=`<div class="ex-check ${checked[i]?'done':''}" id="check_${i}"></div><div class="ex-info"><div class="ex-name">${ex.name}</div><div class="ex-focus">${ex.focus}</div></div><div class="ex-right"><div class="ex-sets">${ex.sets}</div><div class="ex-tip">${ex.tip}</div></div>`;
+    div.onclick=()=>{
+      checked[i]=!checked[i];
+      checkedExercises[todayKey]=checked;
+      localStorage.setItem('checked',JSON.stringify(checkedExercises));
+      document.getElementById('check_'+i).className='ex-check'+(checked[i]?' done':'');
+      if(checked[i])showToast('✓ '+ex.name);
+    };
+    container.appendChild(div);
+  });
+}
+
+function saveSession(){
+  const todayIdx=getTodayDay();
+  const todayData=days[todayIdx];
+  const todayKey='day_'+todayIdx+'_'+new Date().toDateString();
+  const checked=checkedExercises[todayKey]||{};
+  const note=document.getElementById('seanceNote').value;
+  const doneCount=Object.values(checked).filter(Boolean).length;
+  const session={
+    date:new Date().toLocaleDateString('fr-FR'),
+    timestamp:Date.now(),
+    seance:todayData.label,
+    type:todayData.type,
+    exercises:todayData.exercises.length,
+    done:doneCount,
+    note:note,
+  };
+  sessions.unshift(session);
+  if(sessions.length>50)sessions=sessions.slice(0,50);
+  localStorage.setItem('sessions',JSON.stringify(sessions));
+  document.getElementById('seanceNote').value='';
+  showToast('💪 Séance sauvegardée !');
+}
+
+// TIMER
+function setTimer(sec){
+  timerDuration=sec;timerRemaining=sec;timerSelected=sec;
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;timerRunning=false;}
+  document.getElementById('timerStartBtn').textContent='Start';
+  document.getElementById('timerDisplay').className='timer-display';
+  document.querySelectorAll('.timer-preset').forEach(b=>b.classList.remove('active'));
+  updateTimerDisplay();
+  document.getElementById('timerBar').style.width='0%';
+}
+
+function updateTimerDisplay(){
+  const m=Math.floor(timerRemaining/60),s=timerRemaining%60;
+  document.getElementById('timerDisplay').textContent=m+':'+(s<10?'0':'')+s;
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);timerInterval=null;timerRunning=false;
+    document.getElementById('timerStartBtn').textContent='Reprendre';
+    document.getElementById('timerDisplay').className='timer-display';
+  } else {
+    timerRunning=true;
+    document.getElementById('timerStartBtn').textContent='Pause';
+    document.getElementById('timerDisplay').className='timer-display running';
+    timerInterval=setInterval(()=>{
+      timerRemaining--;
+      const pct=((timerDuration-timerRemaining)/timerDuration)*100;
+      document.getElementById('timerBar').style.width=pct+'%';
+      updateTimerDisplay();
+      if(timerRemaining<=0){
+        clearInterval(timerInterval);timerInterval=null;timerRunning=false;
+        document.getElementById('timerDisplay').className='timer-display done';
+        document.getElementById('timerDisplay').textContent='GO !';
+        document.getElementById('timerStartBtn').textContent='Start';
+        document.getElementById('timerBar').style.width='100%';
+        showToast('⏱ Repos terminé — GO !');
+        if('vibrate' in navigator)navigator.vibrate([200,100,200]);
+      }
+    },1000);
+  }
+}
+
+function resetTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  timerRunning=false;timerRemaining=timerDuration;
+  document.getElementById('timerStartBtn').textContent='Start';
+  document.getElementById('timerDisplay').className='timer-display';
+  document.getElementById('timerBar').style.width='0%';
+  updateTimerDisplay();
+}
+
+// CHARGES PAGE
+function renderCharges(){
+  const grid=document.getElementById('chargesGrid');
+  grid.innerHTML='';
+  keyExercises.forEach((ex,i)=>{
+    const current=charges[ex.name]||{current:'',pr:''};
+    const div=document.createElement('div');
+    div.className='charge-row';
+    div.innerHTML=`<div style="flex:1"><div class="charge-label">${ex.name}</div><div class="charge-sub">${ex.unit}</div>${current.pr?`<div class="charge-pr">Record : ${current.pr} ${ex.unit}</div>`:''}</div><div class="charge-input-wrap"><input class="charge-input" type="number" inputmode="decimal" placeholder="0" value="${current.current||''}" onchange="saveCharge('${ex.name}',this.value,'${ex.unit}')"><span class="charge-unit">${ex.unit.split(' ')[0]}</span></div>`;
+    grid.appendChild(div);
+  });
+}
+
+function saveCharge(name,val,unit){
+  if(!val)return;
+  const current=charges[name]||{current:'',pr:''};
+  const prev=parseFloat(current.pr)||0;
+  const newVal=parseFloat(val);
+  charges[name]={current:val,pr:Math.max(prev,newVal).toString()};
+  localStorage.setItem('charges',JSON.stringify(charges));
+  if(newVal>prev&&prev>0){showToast('🏆 Nouveau record ! '+val+' '+unit);}
+  else{showToast('✓ Charge sauvegardée');}
+  renderCharges();
+}
+
+// JOURNAL PAGE
+function renderJournal(){
+  const list=document.getElementById('journalList');
+  document.getElementById('statSeances').textContent=sessions.length;
+  const weekAgo=Date.now()-7*24*60*60*1000;
+  const thisWeek=sessions.filter(s=>s.timestamp>weekAgo).length;
+  document.getElementById('statSemaine').textContent=thisWeek;
+  if(!sessions.length){list.innerHTML='<div class="empty">Aucune séance enregistrée.<br>Complète ta première séance !</div>';return;}
+  list.innerHTML=sessions.map(s=>`<div class="journal-entry"><div class="je-date">${s.date}</div><div class="je-seance">${s.seance}</div>${s.note?`<div class="je-note">${s.note}</div>`:''}<div class="je-stats"><span class="je-badge">${s.done}/${s.exercises} ex.</span><span class="je-badge">${typeLabel[s.type]||s.type}</span></div></div>`).join('');
+}
+
+// SHARE
+function shareLink(){
+  const url=window.location.href;
+  navigator.clipboard.writeText(url).then(()=>showToast('🔗 Lien copié !')).catch(()=>showToast('Copie le lien manuellement'));
+}
+
+function shareNative(){
+  if(navigator.share){
+    navigator.share({title:'Programme Recompo',text:'Mon programme de recomposition corporelle — 10 semaines',url:window.location.href});
+  } else {shareLink();}
+}
+
+function shareStats(){
+  const total=sessions.length;
+  const weekAgo=Date.now()-7*24*60*60*1000;
+  const thisWeek=sessions.filter(s=>s.timestamp>weekAgo).length;
+  const prs=Object.entries(charges).filter(([,v])=>v.pr).map(([k,v])=>`${k}: ${v.pr}kg`).join('\n');
+  const text=`💪 Recompo — Mes stats\n\n📊 ${total} séances au total\n📅 ${thisWeek} cette semaine\n\n🏆 Records :\n${prs||'Pas encore de records'}\n\n🎯 Objectif : tracé, sec, bien gaulé cet été`;
+  navigator.clipboard.writeText(text).then(()=>showToast('📊 Stats copiées !')).catch(()=>{});
+}
+
+function shareLastSession(){
+  if(!sessions.length){showToast('Aucune séance enregistrée');return;}
+  const s=sessions[0];
+  const text=`💪 Séance du ${s.date}\n${s.seance}\n✅ ${s.done}/${s.exercises} exercices\n${s.note?'\n"'+s.note+'"':''}\n\n#recompo #musculation`;
+  navigator.clipboard.writeText(text).then(()=>showToast('💪 Séance copiée !')).catch(()=>{});
+}
+
+// AI CHAT
+let chatHistory=[];
+let apiKey=localStorage.getItem('anthropic_key')||'';
+
+function initIAPage(){
+  if(apiKey){
+    document.getElementById('iaSetup').style.display='none';
+    document.getElementById('iaChat').style.display='flex';
+  } else {
+    document.getElementById('iaSetup').style.display='block';
+    document.getElementById('iaChat').style.display='none';
+  }
+}
+
+function saveApiKey(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key.startsWith('sk-ant-')){showToast('Clé invalide — commence par sk-ant-');return;}
+  apiKey=key;
+  localStorage.setItem('anthropic_key',key);
+  initIAPage();
+  showToast('✓ Coach IA activé !');
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,100)+'px';
+}
+
+function handleChatKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+}
+
+function sendSuggestion(text){
+  document.getElementById('chatInput').value=text;
+  sendMessage();
+}
+
+function addBubble(text,role){
+  const msgs=document.getElementById('chatMessages');
+  const bubble=document.createElement('div');
+  bubble.className='chat-bubble '+role;
+  if(text==='...'){bubble.innerHTML='<span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';bubble.classList.add('typing');}
+  else{bubble.textContent=text;}
+  msgs.appendChild(bubble);
+  msgs.scrollTop=msgs.scrollHeight;
+  return bubble;
+}
+
+async function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text||!apiKey)return;
+  input.value='';input.style.height='auto';
+  document.getElementById('chatSendBtn').disabled=true;
+
+  addBubble(text,'user');
+  chatHistory.push({role:'user',content:text});
+
+  const typing=addBubble('...','ai');
+
+  const systemPrompt=`Tu es un coach sportif et nutritionnel expert. Tu connais l'utilisateur : homme, 1m95, 85kg, 23-27 ans, 5 séances salle/semaine, objectif recomposition corporelle (tracé, sec, musclé). Il fait une cure d'Ostarine MK-2866 15mg/jour pendant 6 semaines puis Testo Max pendant 4 semaines. Il prend créatine, whey, vitamine D3. Sa nutrition cible : 3000 kcal, 205g protéines, 290g glucides, 80g lipides. Son programme actuel : Push/Pull/Legs sur 5 jours + 2 LISS. Points faibles : épaules, dos, bras. 
+Quand tu crées un programme, formate-le clairement avec les jours, exercices, séries et reps. Sois direct, précis et pratique. Réponds en français.`;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:chatHistory
+      })
+    });
+    const data=await res.json();
+    if(data.error){throw new Error(data.error.message);}
+    const reply=data.content[0].text;
+    chatHistory.push({role:'assistant',content:reply});
+    typing.classList.remove('typing');
+    typing.textContent='';
+
+    // Format response with line breaks
+    reply.split('\n').forEach((line,i)=>{
+      if(i>0){typing.appendChild(document.createElement('br'));}
+      typing.appendChild(document.createTextNode(line));
+    });
+
+    document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;
+  } catch(err){
+    typing.textContent='Erreur : '+(err.message||'Vérife ta clé API');
+    if(err.message&&err.message.includes('401')){
+      apiKey='';localStorage.removeItem('anthropic_key');
+      setTimeout(()=>initIAPage(),1500);
+    }
+  }
+  document.getElementById('chatSendBtn').disabled=false;
+}
+
+// INIT
+renderWeekNav();
+renderDays();
+renderSeance();
+updateTimerDisplay();
+</script>
+</body>
+</html>
