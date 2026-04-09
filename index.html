@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Programme Recompo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #0e0e0e; --surface: #161616; --surface2: #1e1e1e;
+  --border: rgba(255,255,255,0.08); --accent: #c8f060; --accent2: #60d4f0;
+  --accent3: #f060a0; --legs-col: #f0a060; --liss-col: #a060f0;
+  --text: #f0f0ee; --muted: #888; --push-col: #c8f060; --pull-col: #60d4f0;
+}
+html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+.app { padding: 3rem 1rem 5rem; max-width: 480px; margin: 0 auto; }
+.header { margin-bottom: 1.5rem; }
+.header-tag { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+.header-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; line-height: 1.05; }
+.header-sub { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+.stats-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; margin-bottom: 1.5rem; }
+.stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 6px; text-align: center; }
+.stat-val { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.stat-label { font-size: 9px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+.section-header { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; margin-top: 1.5rem; }
+.week-nav { display: flex; gap: 5px; margin-bottom: 1rem; flex-wrap: wrap; }
+.week-btn { font-family: 'DM Mono', monospace; font-size: 11px; padding: 6px 11px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; -webkit-appearance: none; }
+.week-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+.phase-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; color: var(--muted); }
+.phase-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.days-grid { display: flex; flex-direction: column; gap: 7px; margin-bottom: 1.5rem; }
+.day-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+.day-header { display: grid; grid-template-columns: 68px 1fr 24px; align-items: center; padding: 11px 12px; gap: 10px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.day-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+.day-info { display: flex; flex-direction: column; gap: 3px; }
+.day-top { display: flex; align-items: center; gap: 8px; }
+.day-pill { font-size: 9px; font-weight: 500; padding: 2px 8px; border-radius: 20px; font-family: 'DM Mono', monospace; text-transform: uppercase; flex-shrink: 0; }
+.pill-push { background: rgba(200,240,96,0.15); color: var(--push-col); }
+.pill-pull { background: rgba(96,212,240,0.15); color: var(--pull-col); }
+.pill-legs { background: rgba(240,160,96,0.15); color: var(--legs-col); }
+.pill-liss { background: rgba(160,96,240,0.15); color: var(--liss-col); }
+.pill-rest { background: rgba(68,68,68,0.3); color: var(--muted); }
+.day-name { font-size: 13px; font-weight: 500; }
+.day-focus { font-size: 10px; color: var(--muted); }
+.day-arrow { font-size: 11px; color: var(--muted); transition: transform 0.2s; text-align: center; }
+.day-card.expanded .day-arrow { transform: rotate(180deg); }
+.day-body { display: none; padding: 0 12px 12px; }
+.day-card.expanded .day-body { display: block; }
+.exercises { display: flex; flex-direction: column; gap: 5px; }
+.ex-row { display: grid; grid-template-columns: 1fr auto; align-items: start; padding: 8px 10px; background: var(--surface2); border-radius: 8px; gap: 8px; }
+.ex-name { font-size: 12px; font-weight: 500; }
+.ex-focus { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.ex-sets { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); text-align: right; white-space: nowrap; }
+.ex-tip { font-size: 9px; color: var(--muted); margin-top: 2px; text-align: right; }
+.day-note { font-size: 11px; color: var(--muted); margin-top: 8px; padding: 8px 10px; background: var(--surface2); border-radius: 8px; border-left: 2px solid var(--accent); line-height: 1.6; }
+.card-block { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.macro-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; margin-bottom: 10px; }
+.macro { text-align: center; padding: 10px 4px; background: var(--surface2); border-radius: 8px; }
+.macro-val { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.macro-key { font-size: 9px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+.info-rows { display: flex; flex-direction: column; gap: 5px; }
+.info-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 7px 10px; background: var(--surface2); border-radius: 8px; gap: 8px; }
+.info-key { color: var(--muted); flex-shrink: 0; }
+.info-val { color: var(--text); font-weight: 500; text-align: right; font-size: 11px; }
+.prog-rows { display: flex; flex-direction: column; gap: 10px; }
+.prog-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+.prog-name { color: var(--muted); }
+.prog-stat { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); }
+.prog-track { background: var(--surface2); border-radius: 4px; height: 5px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; }
+.footer-note { margin-top: 2rem; font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; padding: 12px; border: 0.5px solid var(--border); border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-tag">// Programme recompo — 10 semaines</div>
+  <div class="header-title">Recompo<br>1m95 · 85kg</div>
+  <div class="header-sub">MK-2866 sem 1–6 · Testo Max sem 7–10<br>Objectif : tracé, sec, bien gaulé</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-val" style="color:var(--accent);">3000</div><div class="stat-label">kcal/j</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--accent2);">205g</div><div class="stat-label">protéines</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--legs-col);">5+2</div><div class="stat-label">séances</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--liss-col);">10</div><div class="stat-label">semaines</div></div>
+</div>
+
+<div class="section-header">Programme · Semaine type</div>
+<div class="week-nav" id="weekNav"></div>
+<div class="phase-tag"><div class="phase-dot"></div><span id="phaseLabel">Sem 1–2 — Installation MK</span></div>
+<div class="days-grid" id="daysGrid"></div>
+
+<div class="section-header">Nutrition · Recompo</div>
+<div class="card-block">
+  <div class="macro-grid">
+    <div class="macro"><div class="macro-val" style="color:var(--accent);">3000</div><div class="macro-key">kcal</div></div>
+    <div class="macro"><div class="macro-val" style="color:var(--accent2);">205g</div><div class="macro-key">protéines</div></div>
+    <div class="macro"><div class="macro-val" style="color:var(--legs-col);">290g</div><div class="macro-key">glucides</div></div>
+    <div class="macro"><div class="macro-val" style="color:var(--liss-col);">80g</div><div class="macro-key">lipides</div></div>
+  </div>
+  <div class="info-rows">
+    <div class="info-row"><span class="info-key">Pré-training</span><span class="info-val">80g glucides + 40g protéines</span></div>
+    <div class="info-row"><span class="info-key">Post-training</span><span class="info-val">Whey 40g + 60g riz / banane</span></div>
+    <div class="info-row"><span class="info-key">Soir</span><span class="info-val">Protéines + légumes, glucides réduits</span></div>
+    <div class="info-row"><span class="info-key">Eau</span><span class="info-val">3L minimum / jour</span></div>
+    <div class="info-row"><span class="info-key">Alcool</span><span class="info-val">0 — stop total pendant la cure</span></div>
+  </div>
+</div>
+
+<div class="section-header">Suppléments</div>
+<div class="card-block">
+  <div class="info-rows">
+    <div class="info-row"><span class="info-key">Ostarine MK-2866</span><span class="info-val">15mg/j · sem 1–6 · matin</span></div>
+    <div class="info-row"><span class="info-key">TUDCA</span><span class="info-val">250mg/j · sem 1–6 · foie</span></div>
+    <div class="info-row"><span class="info-key">Créatine</span><span class="info-val">5g/j · continu</span></div>
+    <div class="info-row"><span class="info-key">Whey</span><span class="info-val">40g · post-training</span></div>
+    <div class="info-row"><span class="info-key">Vitamine D3</span><span class="info-val">3000 UI/j · matin</span></div>
+    <div class="info-row"><span class="info-key">Testo Max</span><span class="info-val">4 caps/j · sem 7–10 · jeun</span></div>
+  </div>
+</div>
+
+<div class="section-header">Résultats attendus sem 10</div>
+<div class="card-block">
+  <div class="prog-rows">
+    <div><div class="prog-label"><span class="prog-name">Masse musculaire</span><span class="prog-stat">+1.5 à 2.5 kg</span></div><div class="prog-track"><div class="prog-fill" style="width:75%;background:var(--accent);"></div></div></div>
+    <div><div class="prog-label"><span class="prog-name">Masse grasse</span><span class="prog-stat">−1.5 à 2.5 kg</span></div><div class="prog-track"><div class="prog-fill" style="width:70%;background:var(--accent2);"></div></div></div>
+    <div><div class="prog-label"><span class="prog-name">Force (charges)</span><span class="prog-stat">+6 à 10%</span></div><div class="prog-track"><div class="prog-fill" style="width:65%;background:var(--legs-col);"></div></div></div>
+    <div><div class="prog-label"><span class="prog-name">Définition visible</span><span class="prog-stat">Nette</span></div><div class="prog-track"><div class="prog-fill" style="width:82%;background:var(--liss-col);"></div></div></div>
+    <div><div class="prog-label"><span class="prog-name">Épaules / dos</span><span class="prog-stat">Impact maximal</span></div><div class="prog-track"><div class="prog-fill" style="width:88%;background:var(--accent3);"></div></div></div>
+  </div>
+</div>
+
+<div class="footer-note">
+  Prise de sang avant de commencer<br>Testostérone totale + bilan hépatique ASAT/ALAT<br><br>
+  Stop immédiat si douleur sous côte droite, fatigue anormale ou jaunisse.
+</div>
+
+</div>
+<script>
+const days=[{day:"Lundi",type:"push",label:"Push lourd",focus:"Épaules + Pecs + Triceps",exercises:[{name:"Presse militaire barre",focus:"Épaules — priorité absolue",sets:"5×5",tip:"Progression semaine/semaine"},{name:"Développé incliné barre",focus:"Haut du pectoral",sets:"4×8",tip:"Inclinaison 30–45°"},{name:"Élévations latérales",focus:"Deltoïdes médians",sets:"4×15",tip:"Contrôle strict, pas d'élan"},{name:"Dips lestés",focus:"Pecs bas + triceps",sets:"3×10",tip:"Lester si trop facile"},{name:"Face pulls câble",focus:"Deltoïdes postérieurs",sets:"3×15",tip:"Essentiel pour l'épaule"}],note:"La presse militaire est ton exercice roi. Note ta charge chaque semaine — c'est ce qui change la silhouette sur un 1m95."},{day:"Mardi",type:"pull",label:"Pull lourd",focus:"Dos + Biceps",exercises:[{name:"Tractions lestées",focus:"Grand dorsal — largeur",sets:"5×6",tip:"Lester dès 8 reps propres"},{name:"Rowing barre Yates",focus:"Épaisseur du dos",sets:"4×8",tip:"Dos plat, tirage vers sternum"},{name:"Tirage nuque poulie",focus:"Grand dorsal finition",sets:"3×12",tip:"Amplitude complète"},{name:"Curl barre EZ",focus:"Biceps — masse",sets:"3×10",tip:"Pas d'élan"},{name:"Curl marteau",focus:"Brachial + avant-bras",sets:"3×12",tip:"Alterné ou simultané"}],note:"Tractions lestées sur 1m95 = l'exercice le plus efficace pour créer la largeur de dos et l'effet V."},{day:"Mercredi",type:"liss",label:"LISS + Gainage",focus:"Cardio léger + core",exercises:[{name:"Vélo ou marche rapide",focus:"Cardio basse intensité",sets:"40 min",tip:"130–140 bpm max"},{name:"Planche frontale",focus:"Core stabilité",sets:"4×45s",tip:"Fessiers et abdos contractés"},{name:"Planche latérale",focus:"Obliques",sets:"3×30s/côté",tip:"Hanches hautes"},{name:"Hollow body hold",focus:"Abdos profonds",sets:"3×30s",tip:"Bas du dos collé au sol"}],note:"Pas de course à pied — trop catabolique. Le vélo ou la marche rapide brûle du gras sans toucher au muscle."},{day:"Jeudi",type:"push",label:"Push volume",focus:"Épaules volume + Bras",exercises:[{name:"Développé Arnold",focus:"Tout le deltoïde",sets:"4×12",tip:"Rotation complète"},{name:"Élévations frontales",focus:"Deltoïde antérieur",sets:"3×15",tip:"Alterné, contrôle"},{name:"Développé couché barre",focus:"Pecs — masse",sets:"4×10",tip:"Toucher légèrement la poitrine"},{name:"Extension triceps poulie",focus:"Triceps — isolation",sets:"4×12",tip:"Coudes fixes"},{name:"Dips entre bancs",focus:"Triceps finition",sets:"3×15",tip:"Lest possible"}],note:"Plus de reps, moins de charge que lundi. Les deux séances push créent un stimulus complet."},{day:"Vendredi",type:"pull",label:"Pull volume",focus:"Dos épaisseur + Bras isolation",exercises:[{name:"Rowing unilatéral haltère",focus:"Grand dorsal + rhomboïdes",sets:"4×12/côté",tip:"Tirage vers la hanche"},{name:"Tirage horizontal câble",focus:"Dos moyen — épaisseur",sets:"4×12",tip:"Omoplates ensemble"},{name:"Curl concentré",focus:"Biceps — pic",sets:"3×12/côté",tip:"Contraction max en haut"},{name:"Curl barre supination",focus:"Biceps — masse",sets:"3×10",tip:"Pause 1s en haut"},{name:"Shrugs haltères",focus:"Trapèzes",sets:"3×15",tip:"Légère rotation en haut"}],note:"Volume et isolation — détails du dos et bras. Sensations importantes ici, moins la charge."},{day:"Samedi",type:"legs",label:"Jambes",focus:"Quadriceps + Fessiers + Ischios",exercises:[{name:"Squat barre dos",focus:"Jambes complètes",sets:"5×6",tip:"Profondeur parallèle minimum"},{name:"Leg press",focus:"Quadriceps",sets:"4×12",tip:"Pieds hauts = fessiers"},{name:"Fentes marchées haltères",focus:"Fessiers + équilibre",sets:"3×12/jambe",tip:"Genou arrière près du sol"},{name:"Leg curl couché",focus:"Ischios-jambiers",sets:"4×12",tip:"Contrôle excentrique"},{name:"Mollets debout machine",focus:"Mollets",sets:"4×20",tip:"Pause en bas et en haut"}],note:"Le squat lourd stimule la testostérone et la GH naturellement. Ne saute jamais cette séance."},{day:"Dimanche",type:"rest",label:"Repos actif",focus:"Récupération",exercises:[{name:"Marche 30–45 min",focus:"Récupération active",sets:"Optionnel",tip:"Selon la fatigue"},{name:"Stretching complet",focus:"Mobilité",sets:"20 min",tip:"Épaules, dos, hanches, ischios"},{name:"Sommeil",focus:"Reconstruction musculaire",sets:"8h",tip:"Plus important que la séance"}],note:"Le repos est aussi crucial que l'entraînement. La reconstruction se fait pendant la récupération."}];
+const weekPhases={1:"Sem 1–2 — Installation MK",2:"Sem 1–2 — Installation MK",3:"Sem 3–4 — Effets MK visibles",4:"Sem 3–4 — Effets MK visibles",5:"Sem 5–6 — Pic d'effets MK",6:"Sem 5–6 — Pic d'effets MK",7:"Sem 7–8 — Testo Max PCT",8:"Sem 7–8 — Testo Max PCT",9:"Sem 9–10 — Consolidation",10:"Sem 9–10 — Consolidation"};
+const typeClass={push:'pill-push',pull:'pill-pull',legs:'pill-legs',liss:'pill-liss',rest:'pill-rest'};
+const typeLabel={push:'Push',pull:'Pull',legs:'Legs',liss:'LISS',rest:'Repos'};
+let currentWeek=1,expandedDay=null;
+function renderWeekNav(){const nav=document.getElementById('weekNav');nav.innerHTML='';for(let w=1;w<=10;w++){const btn=document.createElement('button');btn.className='week-btn'+(w===currentWeek?' active':'');btn.textContent='S'+w;btn.onclick=()=>{currentWeek=w;expandedDay=null;render();};nav.appendChild(btn);}}
+function renderDays(){const grid=document.getElementById('daysGrid');const label=document.getElementById('phaseLabel');label.textContent=weekPhases[currentWeek];grid.innerHTML='';days.forEach((d,i)=>{const card=document.createElement('div');card.className='day-card'+(expandedDay===i?' expanded':'');card.innerHTML=`<div class="day-header"><div class="day-num">${d.day.toUpperCase()}</div><div class="day-info"><div class="day-top"><span class="day-pill ${typeClass[d.type]}">${typeLabel[d.type]}</span><span class="day-name">${d.label}</span></div><div class="day-focus">${d.focus}</div></div><div class="day-arrow">▾</div></div><div class="day-body"><div class="exercises">${d.exercises.map(ex=>`<div class="ex-row"><div><div class="ex-name">${ex.name}</div><div class="ex-focus">${ex.focus}</div></div><div><div class="ex-sets">${ex.sets}</div><div class="ex-tip">${ex.tip}</div></div></div>`).join('')}</div><div class="day-note">${d.note}</div></div>`;card.querySelector('.day-header').addEventListener('click',()=>{expandedDay=expandedDay===i?null:i;renderDays();});grid.appendChild(card);});}
+function render(){renderWeekNav();renderDays();}
+render();
+</script>
+</body>
+</html>
